@@ -1,0 +1,104 @@
+
+%start MainMap::Start
+%class AppClass
+
+%map MainMap
+%%
+
+Default {
+Start           Start       {ClearSMC();}
+Unknown         Error       { Unacceptable(); }
+EOS             Error       { Unacceptable(); }
+Letter          Error       { Unacceptable(); }
+AFLetter          Error       { Unacceptable(); }
+Digit           Error       { Unacceptable(); }
+SpaceSym        Error       { Unacceptable(); }
+VertSym         Error      {Unacceptable();}
+SlashSym        Error       { Unacceptable(); }
+ColonSym        Error       { Unacceptable();}
+SymbolSym           Error       { Unacceptable();}
+}
+
+Start {
+Letter [ctxt.isLess4()]     nil     {  LengthInc(); makeName();}
+AFLetter [ctxt.isLess4()]     nil     {  LengthInc(); makeName();}
+Digit [ctxt.isLess4()]      nil     {  LengthInc(); makeName();}
+Letter                    Error      { Unacceptable();}
+Digit                     Error      { Unacceptable();}
+ColonSym[ctxt.isED2K()]   Colon     { LengthZero();}
+}
+
+Colon {
+SlashSym        Slash       {LengthInc();}
+Letter          Error       { Unacceptable(); }
+AFLetter          Error       { Unacceptable(); }
+Digit           Error       { Unacceptable(); }
+SymbolSym           Error       { Unacceptable(); }
+}
+
+Slash{
+SlashSym[ctxt.isLess2()]     nil       {LengthInc();}
+VertSym[ctxt.isLess2()]      Error     {Unacceptable();}
+EOS[ctxt.isCount5()]         OK          {Acceptable();}
+SlashSym     Error      {Unacceptable();}
+VertSym         Vert        {LengthZero(); count();}
+Letter          Error       { Unacceptable(); }
+AFLetter          Error       { Unacceptable(); }
+Digit           Error       { Unacceptable(); }
+}
+
+Vert{
+Letter[ctxt.isCount1()]       Title          {LengthInc(); makeName();}
+Letter[ctxt.isCount2()]       Name_File       {}
+AFLetter[ctxt.isCount1()]       Title          {LengthInc(); makeName();}
+AFLetter[ctxt.isCount2()]       Name_File       {}
+SymbolSym[ctxt.isCount2()]       Name_File       {}
+Digit[ctxt.isCount3()]        Size_File       {}
+Digit[ctxt.isCount4()]        Hash       {makeName();}
+AFLetter[ctxt.isCount4()]       Hash       {makeName();}
+SlashSym[ctxt.isCount5()]     Slash	 {}
+}
+
+Title{
+Letter [ctxt.isLess4()]    nil     {  LengthInc(); makeName();}
+Letter                 Error      { Unacceptable();}
+AFLetter [ctxt.isLess4()]    nil     {  LengthInc(); makeName();}
+AFLetter                 Error      { Unacceptable();}
+VertSym[ctxt.isFile()]     Vert    {LengthZero(); count();}
+Digit                 Error      { Unacceptable();}
+}
+
+Name_File {
+AFLetter          Name_File        {}
+Letter          Name_File        {}
+Digit           Error      { Unacceptable();}
+SymbolSym       Name_File        {}
+VertSym         Vert       {count();}
+}
+ 
+Size_File{
+Digit         Size_File         {}
+VertSym       Vert        {count();}
+AFLetter        Error       {Unacceptable();}
+Letter        Error       {Unacceptable();}
+SymbolSym       Error       {Unacceptable();}
+}
+
+Hash{
+Digit[ctxt.isLess32()]       nil        {LengthInc(); makeName();}
+AFLetter[ctxt.isLess32()]      nil        {LengthInc(); makeName();}
+VertSym[ctxt.isLess32()]       Error         {Unacceptable();}
+VertSym          Vert         {LengthZero(); count(); PutInDec();}
+Digit            Error         {Unacceptable();}
+Letter           Error         {Unacceptable();}
+AFLetter           Error         {Unacceptable();}
+}
+
+Error {
+EOS         nil             { Unacceptable(); printerr();}
+}
+
+OK {
+EOS         nil             { Acceptable(); }
+}
+%%
